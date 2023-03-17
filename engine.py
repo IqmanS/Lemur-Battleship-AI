@@ -22,6 +22,7 @@ class Player:
         self.placeShips(sizes = [5,4,3,3,2])
         list_of_lists_of_indexes = [ship.indexes for ship in self.ships]
         self.indexOfAllShips = [index for sublist in list_of_lists_of_indexes for index in sublist]
+        self.sunkCount = 0
     def placeShips(self,sizes):
         for size in sizes:
             placed = False
@@ -30,6 +31,8 @@ class Player:
                 ship = Ship(size)
                 #check if placement is possible
                 possible = True
+                
+                #checks
                 for i in ship.indexes:
                     #indexes <100
                      if i>=100:
@@ -79,7 +82,19 @@ class Game:
         if i in opponent.indexOfAllShips:
             player.search[i] = "H"
             #check if ship sunk "S"
-            # for ship in opponent.ships:
-            #     ship in opp
+            for ship in opponent.ships:
+
+                sunk = True
+                for i in ship.indexes:
+                    if player.search[i]=="M" or player.search[i]=="U":
+                        sunk = False
+                        break
+                if sunk:
+                    for i in ship.indexes:
+                        player.search[i] = "S"
+                        player.sunkCount+=1
+        
         else:
+            # set miss "M"
             player.search[i] = "M"
+        self.player1_turn = not self.player1_turn
