@@ -68,22 +68,30 @@ class Player:
              print()
 
 class Game:
-    def __init__(self):
+    def __init__(self,human1,human2):
+        self.human1 = human1
+        self.human2 = human2
+        self.computer1 = not human1
+        self.computer2 = not human2
         self.player1 = Player()
         self.player2 = Player()
         self.player1_turn = True
+        self.computerTurn = False
         self.gameOver = False
+        self.result = None
+
         
     def makeMove(self,i):
         player = self.player1 if self.player1_turn else self.player2
         opponent = self.player2 if self.player1_turn else self.player1
-        
+        hit = False
         #set miss "M" or hit "H"
         if i in opponent.indexOfAllShips:
             player.search[i] = "H"
+            hit = True
+            player.sunkCount += 1
             #check if ship sunk "S"
             for ship in opponent.ships:
-
                 sunk = True
                 for i in ship.indexes:
                     if player.search[i]=="M" or player.search[i]=="U":
@@ -92,9 +100,33 @@ class Game:
                 if sunk:
                     for i in ship.indexes:
                         player.search[i] = "S"
-                        player.sunkCount+=1
+                        
         
         else:
             # set miss "M"
             player.search[i] = "M"
-        self.player1_turn = not self.player1_turn
+            
+        #check if GAMEOVER
+        if player.sunkCount >= 17:
+            #opponent won
+            self.gameOver = True
+            self.result = "Player 1" if self.player1_turn else "Player 2"
+    
+        
+        #switch turns for both humans
+        if not hit:
+            self.player1_turn = not self.player1_turn
+            
+        #switch between human and comptuer
+        if(self.computer1 or self.computer2) and not (self.computer1 and self.computer2) and not hit:
+            self.computerTurn = not self.computerTurn
+            
+    def RandomAI(self):
+        search = self.player1.search if self.player1_turn else self.player2.search
+        unknown = []
+        for i in range(100):
+            if search[i] == "U":
+                unknown.append(i)
+        if len(unknown) >0:
+            random_index_to_hit = random.choice(unknown)
+            self.makeMove(random_index_to_hit)

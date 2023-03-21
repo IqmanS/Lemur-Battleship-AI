@@ -1,6 +1,8 @@
 import pygame
 from engine import *
 pygame.init()
+pygame.font.init()
+font = pygame.font.SysFont("fresansttf",100)
 pygame.display.set_caption("Battleship")
 
 #global variables
@@ -9,6 +11,10 @@ H_MARGIN,V_MARGIN = CELL_SIZE*2,CELL_SIZE*3
 WIDTH,HEIGHT = CELL_SIZE*10*2+V_MARGIN,CELL_SIZE*10*2+H_MARGIN
 SCREEN = pygame.display.set_mode((WIDTH,HEIGHT))
 INDENT  = 8
+
+HUMAN1 = True
+HUMAN2 = False
+
 #colors
 GREY = (50,50,60)
 WHITE = (255,250,250)
@@ -31,7 +37,6 @@ def drawGrid(player,left = 0,top=0,search = False):
             pygame.draw.circle(SCREEN,SEARCH_COLORS[player.search[i]],(x,y),radius=CELL_SIZE//4)
 
 def drawShipsOnGrids(player,left = 0,top=0):
-
     for ship in player.ships:
         x = left + ship.col * CELL_SIZE +INDENT
         y = top+ ship.row * CELL_SIZE +INDENT
@@ -45,24 +50,22 @@ def drawShipsOnGrids(player,left = 0,top=0):
         pygame.draw.rect(SCREEN,GREEN,shipRect,border_radius=14)
 
 
-game = Game()
+game = Game(human1=HUMAN1,human2=HUMAN2)
 def player1Turn(game):
     if x < CELL_SIZE * 10 and y < CELL_SIZE * 10:
         row = y // CELL_SIZE
         col = x // CELL_SIZE
-        print(x, col, y, row)
         index = row * 10 + col
         game.makeMove(index)
+
 
 def player2Turn(game):
     if x > CELL_SIZE * 10 + V_MARGIN and y > CELL_SIZE * 10 + H_MARGIN:
         row = (y - CELL_SIZE * 10- H_MARGIN) // CELL_SIZE
         col = (x - CELL_SIZE * 10- V_MARGIN) // CELL_SIZE
-        print(x, col, y, row)
         index = row * 10 + col
         game.makeMove(index)
-        
-        
+       
 #game
 animating = True
 pausing = False
@@ -79,12 +82,12 @@ while animating:
         if event.type == pygame.MOUSEBUTTONDOWN:
             (x,y) = pygame.mouse.get_pos()
             
-            if game.player1_turn:
+            if not game.gameOver and game.player1_turn:
                 player1Turn(game)
-            else:
+
+            elif not game.gameOver and not game.player1_turn:
                 player2Turn(game)
-                
-        
+   
         #keyboard press
         if event.type == pygame.KEYDOWN:
 
@@ -94,7 +97,11 @@ while animating:
             #spce to pause
             if event.key == pygame.K_SPACE:
                 pausing = not pausing
-
+            
+            #enter key to restart the game
+            if event.key == pygame.K_RETURN:
+                game = Game(human1=HUMAN1,human2=HUMAN2)
+                
     if not pausing:
         #draw background
         SCREEN.fill(GREY)
@@ -110,6 +117,16 @@ while animating:
         #draw ships
         drawShipsOnGrids(game.player2,CELL_SIZE*10+V_MARGIN)
         drawShipsOnGrids(game.player1, 0,CELL_SIZE*10+H_MARGIN)
+        
+        if not game.gameOver and game.computerTurn:
+            game.RandomAI()
+        
+        #game over
+        if game.gameOver:
+            text = game.result+" WON!"
+            textbox = font.render(text,False,GREY,WHITE)
+            SCREEN.blit(textbox,(WIDTH//2-200,HEIGHT//2-50))
+        
         #update screen
         pygame.display.flip()
 
