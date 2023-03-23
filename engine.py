@@ -7,6 +7,7 @@ class Ship:
         self.size = size
         self.orientation = random.choice(["h","v"])
         self.indexes = self.compute_indexes()
+        self.isSunk = False
 
     def compute_indexes(self):
         start_index = self.row *10 +self.col
@@ -23,6 +24,7 @@ class Player:
         list_of_lists_of_indexes = [ship.indexes for ship in self.ships]
         self.indexOfAllShips = [index for sublist in list_of_lists_of_indexes for index in sublist]
         self.sunkCount = 0
+
     def placeShips(self,sizes):
         for size in sizes:
             placed = False
@@ -31,7 +33,6 @@ class Player:
                 ship = Ship(size)
                 #check if placement is possible
                 possible = True
-                
                 #checks
                 for i in ship.indexes:
                     #indexes <100
@@ -68,19 +69,22 @@ class Player:
              print()
 
 class Game:
-    def __init__(self,human1,human2):
-        self.human1 = human1
-        self.human2 = human2
-        self.computer1 = not human1
-        self.computer2 = not human2
+    def __init__(self,humanVShuman,humanVScomputer,computerVScomputer):
+        self.humanVShuman = humanVShuman
+        self.humanVScomputer = humanVScomputer
+        self.computerVSComputer = computerVScomputer
         self.player1 = Player()
         self.player2 = Player()
         self.player1_turn = True
-        self.computerTurn = False
+        if(humanVShuman):
+            self.computerTurn = False
+        if(humanVScomputer):
+            self.computerTurn = False
+        if(computerVScomputer):
+            self.computerTurn = True
         self.gameOver = False
         self.result = None
 
-        
     def makeMove(self,i):
         player = self.player1 if self.player1_turn else self.player2
         opponent = self.player2 if self.player1_turn else self.player1
@@ -92,15 +96,16 @@ class Game:
             player.sunkCount += 1
             #check if ship sunk "S"
             for ship in opponent.ships:
-                sunk = True
-                for i in ship.indexes:
-                    if player.search[i]=="M" or player.search[i]=="U":
-                        sunk = False
-                        break
-                if sunk:
+                if ship.isSunk==False:
+                    ship.isSunk = True
                     for i in ship.indexes:
-                        player.search[i] = "S"
-                        
+                        if player.search[i]=="M" or player.search[i]=="U":
+                            ship.isSunk = False
+                            break
+                    if ship.isSunk:
+                        for i in ship.indexes:
+                            player.search[i] = "S"
+
         
         else:
             # set miss "M"
@@ -111,22 +116,56 @@ class Game:
             #opponent won
             self.gameOver = True
             self.result = "Player 1" if self.player1_turn else "Player 2"
-    
+        
+            
         
         #switch turns for both humans
         if not hit:
             self.player1_turn = not self.player1_turn
             
-        #switch between human and comptuer
-        if(self.computer1 or self.computer2) and not (self.computer1 and self.computer2) and not hit:
+        #switch between human and computer
+        if (not hit) and self.humanVScomputer==True:
             self.computerTurn = not self.computerTurn
-            
+        
     def RandomAI(self):
-        search = self.player1.search if self.player1_turn else self.player2.search
+        player = self.player1 if self.player1_turn else self.player2
+        search = player.search
         unknown = []
         for i in range(100):
             if search[i] == "U":
                 unknown.append(i)
-        if len(unknown) >0:
+        if len(unknown) > 0:
             random_index_to_hit = random.choice(unknown)
             self.makeMove(random_index_to_hit)
+            
+    def RandomAIwithNeighbour(self):
+        player = self.player1 if self.player1_turn else self.player2
+        search = player.search
+        hits = []
+        
+        for i in range(100):
+            if search[i] == "H":
+                hits.append(i)
+        if len(hits)>0:
+            for j in hits:
+                i = random.choice(hits)
+                neighbours = []
+                if (i+1<100) and search[i + 1] == "U":
+                    neighbours.extend([i + 1])
+                if (i-1>1) and search[i - 1] == "U":
+                    neighbours.extend([i - 1])
+                if (i+10<100) and search[i + 10] == "U":
+                    neighbours.extend([i + 10])
+                if (i-10>1) and search[i - 10] == "U":
+                    neighbours.extend([i - 10])
+                if len(neighbours) > 0:
+                    index = random.choice(neighbours)
+                    print(hits,i,neighbours,index)
+                    self.makeMove(index)
+                else:
+                    hits.remove(i)
+            else:
+                self.RandomAI()
+        else:
+            self.RandomAI()
+            
