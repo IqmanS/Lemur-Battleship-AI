@@ -13,13 +13,13 @@ SCREEN = pygame.display.set_mode((WIDTH,HEIGHT))
 INDENT  = 8
 
 humanVShuman=False
-humanVScomputer=False
-computerVScomputer=True
+humanVScomputer=True
+computerVScomputer=False
 
 #colors
-GREY = (50,50,60)
+GREY = (70,100,150)
 WHITE = (255,250,250)
-GREEN = (50,250,120)
+GREEN = (80,250,120)
 BLUE = (50,120,250)
 ORANGE = (225,165,0)
 RED = (255,50,50)
@@ -49,6 +49,14 @@ def drawShipsOnGrids(player,left = 0,top=0):
             heightShip = ship.size * CELL_SIZE - INDENT *2
         shipRect = pygame.Rect(x,y,widthShip,heightShip)
         pygame.draw.rect(SCREEN,GREEN,shipRect,border_radius=14)
+        ship_img = pygame.image.load("pixil-frame-0(2).png")
+        shipVer_img = pygame.transform.flip(pygame.transform.rotate(ship_img, 90),True,True)
+        if ship.orientation=="h":
+            
+            SCREEN.blit(ship_img, (x - INDENT, y - INDENT - 5))
+        else:
+            
+            SCREEN.blit(shipVer_img,(x-INDENT-5,y-INDENT))
 
 
 game = Game(humanVShuman=humanVShuman,
@@ -88,15 +96,15 @@ while animating:
             (x,y) = pygame.mouse.get_pos()
             
             if not game.gameOver and game.player1_turn:
-                # print("p1")
+                print("p1",end=" ")
                 player1Turn(game)
 
             elif not game.gameOver and not game.player1_turn and not game.computerTurn:
-                # print("p2")
+                print("p2",end=" ")
                 player2Turn(game)
                 
             if not game.gameOver and game.computerTurn:
-                # print("random")
+                print("computer",end=" ")
                 game.RandomAIwithNeighbour()
 
    
