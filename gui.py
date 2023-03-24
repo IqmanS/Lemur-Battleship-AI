@@ -20,7 +20,7 @@ computerVScomputer=False
 GREY = (70,100,150)
 WHITE = (255,250,250)
 GREEN = (80,250,120)
-BLUE = (50,120,250)
+BLUE = (200,200,200)
 ORANGE = (225,165,0)
 RED = (255,50,50)
 SEARCH_COLORS = {"U":GREY,"M":BLUE,"H":ORANGE,"S":RED}
@@ -48,16 +48,13 @@ def drawShipsOnGrids(player,left = 0,top=0):
             widthShip = CELL_SIZE - INDENT *2
             heightShip = ship.size * CELL_SIZE - INDENT *2
         shipRect = pygame.Rect(x,y,widthShip,heightShip)
-        pygame.draw.rect(SCREEN,GREEN,shipRect,border_radius=14)
-        ship_img = pygame.image.load("pixil-frame-0(2).png")
-        shipVer_img = pygame.transform.flip(pygame.transform.rotate(ship_img, 90),True,True)
+        # pygame.draw.rect(SCREEN,GREEN,shipRect,border_radius=14)
+        ship_img = pygame.image.load(str(ship.size)+"r.png")
+        shipVer_img = pygame.transform.flip(pygame.transform.rotate(ship_img, 90),False,True)
         if ship.orientation=="h":
-            
-            SCREEN.blit(ship_img, (x - INDENT, y - INDENT - 5))
+            SCREEN.blit(ship_img, (x - INDENT, y - INDENT))
         else:
-            
-            SCREEN.blit(shipVer_img,(x-INDENT-5,y-INDENT))
-
+            SCREEN.blit(shipVer_img,(x-INDENT,y-INDENT))
 
 game = Game(humanVShuman=humanVShuman,
             humanVScomputer=humanVScomputer,computerVScomputer=computerVScomputer)
@@ -90,22 +87,21 @@ while animating:
         if event.type == pygame.QUIT:
             animating = False
         
-        
         #mouse clicks
         if event.type == pygame.MOUSEBUTTONDOWN:
             (x,y) = pygame.mouse.get_pos()
             
-            if not game.gameOver and game.player1_turn:
-                print("p1",end=" ")
+            if not game.gameOver and game.player1_turn and not game.computerTurn:
+                # print("p1")
                 player1Turn(game)
 
             elif not game.gameOver and not game.player1_turn and not game.computerTurn:
-                print("p2",end=" ")
+                # print("p2")
                 player2Turn(game)
                 
-            if not game.gameOver and game.computerTurn:
-                print("computer",end=" ")
-                game.RandomAIwithNeighbour()
+        if (not game.gameOver) and game.computerTurn and not game.player1_turn:
+            # print("\ncomputer")
+            game.ImprovedSearchAIwithNeighbour()
 
    
         #keyboard press
@@ -143,8 +139,8 @@ while animating:
         if game.gameOver:
             pygame.time.delay(500)
             text = game.result+" WON!"
-            textbox = font.render(text,False,GREY,WHITE)
-            SCREEN.blit(textbox,(WIDTH//2-200,HEIGHT//2-50))
+            textbox = font.render(text,True,(0,0,0),(80,110,160))
+            SCREEN.blit(textbox,(WIDTH//2-240,HEIGHT//2-35))
         
         #update screen
         pygame.display.flip()
