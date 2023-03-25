@@ -2,13 +2,14 @@ import pygame
 from engine import *
 pygame.init()
 pygame.font.init()
-font = pygame.font.SysFont("fresansttf",100)
+fontH = pygame.font.SysFont("fresansttf",66)
+fontS = pygame.font.SysFont("fresansttf",45)
 pygame.display.set_caption("Battleship")
 
 #global variables
 CELL_SIZE = 35
 H_MARGIN,V_MARGIN = CELL_SIZE*2,CELL_SIZE*3
-WIDTH,HEIGHT = CELL_SIZE*10*2+V_MARGIN,CELL_SIZE*10*2+H_MARGIN
+WIDTH,HEIGHT = CELL_SIZE*10*2+V_MARGIN+80,CELL_SIZE*10*2+H_MARGIN
 SCREEN = pygame.display.set_mode((WIDTH,HEIGHT))
 INDENT  = 8
 
@@ -37,7 +38,7 @@ def drawGrid(player,left = 0,top=0,search = False):
             y+= CELL_SIZE//2
             pygame.draw.circle(SCREEN,SEARCH_COLORS[player.search[i]],(x,y),radius=CELL_SIZE//4)
 
-def drawShipsOnGrids(player,left = 0,top=0):
+def drawShipsOnGrids(player,isComputer,left = 0,top=0):
     for ship in player.ships:
         x = left + ship.col * CELL_SIZE +INDENT
         y = top+ ship.row * CELL_SIZE +INDENT
@@ -51,10 +52,11 @@ def drawShipsOnGrids(player,left = 0,top=0):
         # pygame.draw.rect(SCREEN,GREEN,shipRect,border_radius=14)
         ship_img = pygame.image.load(str(ship.size)+"r.png")
         shipVer_img = pygame.transform.flip(pygame.transform.rotate(ship_img, 90),False,True)
-        if ship.orientation=="h":
-            SCREEN.blit(ship_img, (x - INDENT, y - INDENT))
-        else:
-            SCREEN.blit(shipVer_img,(x-INDENT,y-INDENT))
+        if not isComputer or ship.isSunk:
+            if ship.orientation=="h":
+                SCREEN.blit(ship_img, (x - INDENT, y - INDENT))
+            elif ship.orientation=="v":
+                SCREEN.blit(shipVer_img,(x-INDENT,y-INDENT))
 
 game = Game(humanVShuman=humanVShuman,
             humanVScomputer=humanVScomputer,computerVScomputer=computerVScomputer)
@@ -90,7 +92,7 @@ while animating:
         #mouse clicks
         if event.type == pygame.MOUSEBUTTONDOWN:
             (x,y) = pygame.mouse.get_pos()
-            
+            (x,y) = (x-40,y-75)
             if not game.gameOver and game.player1_turn and not game.computerTurn:
                 # print("p1")
                 player1Turn(game)
@@ -111,8 +113,6 @@ while animating:
             if event.key == pygame.K_ESCAPE:
                 animating = False
             #spce to pause
-            if event.key == pygame.K_SPACE:
-                pausing = not pausing
             
             #enter key to restart the game
             if event.key == pygame.K_RETURN:
@@ -124,23 +124,50 @@ while animating:
         SCREEN.fill(GREY)
 
         #search grids
-        drawGrid(game.player1,search=True)                                          #TOP LEFT
-        drawGrid(game.player2,CELL_SIZE*10+V_MARGIN,CELL_SIZE*10+H_MARGIN,search= True)#BOTTOM RIGHT
+        drawGrid(game.player1,40,75,search=True)                                              #TOP LEFT
+        drawGrid(game.player2,CELL_SIZE*10+V_MARGIN+40,75,search= True)#BOTTOM RIGHT
 
         #position grids
-        drawGrid(game.player1,CELL_SIZE*10+V_MARGIN)                   #BOTTOM LEFT
-        drawGrid(game.player2 ,0,CELL_SIZE*10+H_MARGIN)                 #TOP RIGHT
+        # drawGrid(game.player1,CELL_SIZE*10+V_MARGIN)                   #BOTTOM LEFT
+        # drawGrid(game.player2 ,0,CELL_SIZE*10+H_MARGIN)                 #TOP RIGHT
 
         #draw ships
-        drawShipsOnGrids(game.player2,CELL_SIZE*10+V_MARGIN)
-        drawShipsOnGrids(game.player1, 0,CELL_SIZE*10+H_MARGIN)
+        drawShipsOnGrids(game.player2,True, 40, 75)
+        drawShipsOnGrids(game.player1,False,CELL_SIZE*10+V_MARGIN+40,75)
+
+        playerInfo = "Player Grid"
+        platerDets = "You hit here"
+        playerInfoBox = fontH.render(playerInfo,True,(0,0,0),GREY)
+        platerDetsBox = fontS.render(platerDets, True, (0,0,0), GREY)
+        SCREEN.blit(playerInfoBox, (40,100 + CELL_SIZE*10))
+        SCREEN.blit(platerDetsBox, (40, 100 + CELL_SIZE * 10+50))
+
+        AIInfo = "AI Bot Grid"
+        AIDets1 = "Your Ships go here"
+        AIDets2 = "AI hits here"
+        AIInfoBox = fontH.render(AIInfo,True,(0,0,0),GREY)
+        AIDetsBox1 = fontS.render(AIDets1, True, (0, 0, 0), GREY)
+        AIDetsBox2 = fontS.render(AIDets2, True, (0, 0, 0), GREY)
+        SCREEN.blit(AIInfoBox, (CELL_SIZE*10+V_MARGIN+40, 100 + CELL_SIZE * 10))
+        SCREEN.blit(AIDetsBox1, (CELL_SIZE*10+V_MARGIN+40, 100 + CELL_SIZE * 10+50))
+        SCREEN.blit(AIDetsBox2, (CELL_SIZE * 10 + V_MARGIN + 40, 100 + CELL_SIZE * 10 +85))
         
+        key1 = "Press ENTER - Randomize Your Ships"
+        key2 = "Press LMB - Hit on Opponents Grid"
+        keyBox1 = fontS.render(key1, True, (0, 0, 0), GREY)
+        keyBox2 = fontS.render(key2, True, (0, 0, 0), GREY)
+        SCREEN.blit(keyBox1, ((CELL_SIZE * 10 + 40)//2, 100 + CELL_SIZE * 10 + 135))
+        SCREEN.blit(keyBox2, ((CELL_SIZE * 10 + 40)//2, 100 + CELL_SIZE * 10 + 170))
         #game over
         if game.gameOver:
             pygame.time.delay(500)
-            text = game.result+" WON!"
-            textbox = font.render(text,True,(0,0,0),(80,110,160))
-            SCREEN.blit(textbox,(WIDTH//2-240,HEIGHT//2-35))
+            text = None
+            if game.result == "Player 1":
+                text = "YOU WON!!"
+            else:
+                text = "YOU LOST :("
+            textbox = fontH.render(text,True,(0,0,0),(255,255,255))
+            SCREEN.blit(textbox,(WIDTH//2-125,HEIGHT//2-35))
         
         #update screen
         pygame.display.flip()
