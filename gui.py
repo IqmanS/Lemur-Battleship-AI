@@ -71,7 +71,6 @@ def drawHits(player, left=0, top=0, search=False):
 
 
 async def main():
-    print(WIDTH, HEIGHT)
     game = Game(humanVShuman=humanVShuman,
                 humanVScomputer=humanVScomputer, computerVScomputer=computerVScomputer)
     
