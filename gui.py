@@ -33,10 +33,6 @@ def drawGrid(player,left = 0,top=0,search = False):
         y = top+ i // 10 * CELL_SIZE
         square = pygame.Rect(x,y,CELL_SIZE,CELL_SIZE)
         pygame.draw.rect(SCREEN,WHITE,square,width=1)
-        if search:
-            x+= CELL_SIZE//2
-            y+= CELL_SIZE//2
-            pygame.draw.circle(SCREEN,SEARCH_COLORS[player.search[i]],(x,y),radius=CELL_SIZE//4)
 
 def drawShipsOnGrids(player,isComputer,left = 0,top=0):
     for ship in player.ships:
@@ -57,6 +53,15 @@ def drawShipsOnGrids(player,isComputer,left = 0,top=0):
                 SCREEN.blit(ship_img, (x - INDENT, y - INDENT))
             elif ship.orientation=="v":
                 SCREEN.blit(shipVer_img,(x-INDENT,y-INDENT))
+                
+def drawHits(player,left = 0,top=0,search = False):
+    for i in range(100):
+        x = left + i % 10 * CELL_SIZE
+        y = top+ i // 10 * CELL_SIZE
+        if player.search[i]!="U":
+            x+= CELL_SIZE//2
+            y+= CELL_SIZE//2
+            pygame.draw.circle(SCREEN,SEARCH_COLORS[player.search[i]],(x,y),radius=CELL_SIZE//4)
 
 game = Game(humanVShuman=humanVShuman,
             humanVScomputer=humanVScomputer,computerVScomputer=computerVScomputer)
@@ -80,8 +85,9 @@ def player2Turn(game):
 #game
 animating = True
 pausing = False
+bg = pygame.image.load("bg.jpg")
 while animating:
-
+    
     #track user input
     for event in pygame.event.get():
 
@@ -122,7 +128,7 @@ while animating:
     if not pausing:
         #draw background
         SCREEN.fill(GREY)
-
+        SCREEN.blit(bg, (0, 0))
         #search grids
         drawGrid(game.player1,40,75,search=True)                                              #TOP LEFT
         drawGrid(game.player2,CELL_SIZE*10+V_MARGIN+40,75,search= True)#BOTTOM RIGHT
@@ -135,27 +141,30 @@ while animating:
         drawShipsOnGrids(game.player2,True, 40, 75)
         drawShipsOnGrids(game.player1,False,CELL_SIZE*10+V_MARGIN+40,75)
 
+        drawHits(game.player1, 40, 75, search=True)  # TOP LEFT
+        drawHits(game.player2, CELL_SIZE * 10 + V_MARGIN + 40, 75, search=True)
+        
         playerInfo = "Player Grid"
         platerDets = "You hit here"
-        playerInfoBox = fontH.render(playerInfo,True,(0,0,0),GREY)
-        platerDetsBox = fontS.render(platerDets, True, (0,0,0), GREY)
+        playerInfoBox = fontH.render(playerInfo,True,(0,0,0))
+        platerDetsBox = fontS.render(platerDets, True, (0,0,0))
         SCREEN.blit(playerInfoBox, (40,100 + CELL_SIZE*10))
         SCREEN.blit(platerDetsBox, (40, 100 + CELL_SIZE * 10+50))
 
         AIInfo = "AI Bot Grid"
         AIDets1 = "Your Ships go here"
         AIDets2 = "AI hits here"
-        AIInfoBox = fontH.render(AIInfo,True,(0,0,0),GREY)
-        AIDetsBox1 = fontS.render(AIDets1, True, (0, 0, 0), GREY)
-        AIDetsBox2 = fontS.render(AIDets2, True, (0, 0, 0), GREY)
+        AIInfoBox = fontH.render(AIInfo,True,(0,0,0))
+        AIDetsBox1 = fontS.render(AIDets1, True, (0, 0, 0))
+        AIDetsBox2 = fontS.render(AIDets2, True, (0, 0, 0))
         SCREEN.blit(AIInfoBox, (CELL_SIZE*10+V_MARGIN+40, 100 + CELL_SIZE * 10))
         SCREEN.blit(AIDetsBox1, (CELL_SIZE*10+V_MARGIN+40, 100 + CELL_SIZE * 10+50))
         SCREEN.blit(AIDetsBox2, (CELL_SIZE * 10 + V_MARGIN + 40, 100 + CELL_SIZE * 10 +85))
         
         key1 = "Press ENTER - Randomize Your Ships"
         key2 = "Press LMB - Hit on Opponents Grid"
-        keyBox1 = fontS.render(key1, True, (0, 0, 0), GREY)
-        keyBox2 = fontS.render(key2, True, (0, 0, 0), GREY)
+        keyBox1 = fontS.render(key1, True, (0, 0, 0))
+        keyBox2 = fontS.render(key2, True, (0, 0, 0))
         SCREEN.blit(keyBox1, ((CELL_SIZE * 10 + 40)//2, 100 + CELL_SIZE * 10 + 135))
         SCREEN.blit(keyBox2, ((CELL_SIZE * 10 + 40)//2, 100 + CELL_SIZE * 10 + 170))
         #game over
