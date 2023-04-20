@@ -1,4 +1,4 @@
-# Lemur-BattleShip-AI
+# Lemur-Battleship-AI
 <p>Play Online: https://iqman-s.itch.io/battleship-ai</p>
  <img src="https://raw.githubusercontent.com/IqmanS/lemur-battleship-ai/master/BattleshipLogo.png" alt="Girl in a jacket" width="400"> 
 <p>The Lemur AI project involves designing and implementing an artificial intelligence system for playing the classic board game Battleship. The game is played on a grid where each player places their fleet of ships and attempts to sink the opponent's ships by correctly guessing their locations.
